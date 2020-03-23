@@ -1974,6 +1974,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -1981,11 +1982,23 @@ __webpack_require__.r(__webpack_exports__);
       message: ''
     };
   },
+  mounted: function mounted() {
+    this.scroll();
+  },
+  updated: function updated() {
+    this.scroll();
+  },
   methods: {
     send: function send() {
       this.chat.push(this.message);
       console.log(this.message);
       this.message = '';
+      this.scroll();
+    },
+    scroll: function scroll() {
+      var container = document.getElementById("chat-box");
+      var scrollHeight = container.scrollHeight;
+      container.scrollTop = scrollHeight;
     }
   }
 });
@@ -6535,7 +6548,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../node_modules/css-
 
 
 // module
-exports.push([module.i, "\n#chat-box[data-v-41610284] {\n    overflow: auto;\n    height: 30rem;\n}\n", ""]);
+exports.push([module.i, "\n#chat-box[data-v-41610284] {\n    overflow: auto;\n    height: 300px;\n}\n", ""]);
 
 // exports
 

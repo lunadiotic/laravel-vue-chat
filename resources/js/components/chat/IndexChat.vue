@@ -13,6 +13,7 @@
                         <h5 class="mt-0 ">Hakim</h5>
                         {{ chat }}
                     </div>
+
                 </div>
 
             </div>
@@ -40,11 +41,25 @@ export default {
         }
     },
 
+    mounted() {
+        this.scroll();
+    },
+
+    updated() {
+        this.scroll();
+    },
+
     methods: {
         send() {
             this.chat.push(this.message);
             console.log(this.message);
             this.message = '';
+            this.scroll();
+        },
+        scroll() {
+            let container = document.getElementById("chat-box");
+            let scrollHeight = container.scrollHeight;
+            container.scrollTop = scrollHeight;
         }
     },
 }
@@ -53,6 +68,6 @@ export default {
 <style lang="css" scoped>
 #chat-box {
     overflow: auto;
-    height: 30rem;
+    height: 300px;
 }
 </style>
