@@ -1975,23 +1975,38 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       chat: {
         content: []
       },
-      input_message: ''
+      input_message: '',
+      typing: ''
     };
   },
   props: {
     session: Object
   },
+  watch: {
+    input_message: function input_message() {
+      Echo["private"]('channel-chat').whisper('typing', {
+        name: this.session.name
+      });
+    }
+  },
   mounted: function mounted() {
     var _this = this;
 
-    Echo.channel('channel-chat').listen('ChatSent', function (result) {
+    Echo["private"]('channel-chat').listen('ChatSent', function (result) {
       _this.chat.content.push(result);
+    }).listenForWhisper('typing', function (result) {
+      if (result.name != '') {
+        _this.typing = "".concat(result.name, " typing...");
+      } else {
+        _this.typing = '';
+      }
     });
     this.scroll();
   },
@@ -2010,8 +2025,6 @@ __webpack_require__.r(__webpack_exports__);
         axios.post('/send', {
           message: this.input_message
         }).then(function (result) {
-          console.log(result);
-          console.log(_this2.session);
           _this2.input_message = '';
         })["catch"](function (err) {
           console.log(err);
@@ -48056,7 +48069,9 @@ var render = function() {
               }
             }
           })
-        ])
+        ]),
+        _vm._v(" "),
+        _c("p", [_vm._v(_vm._s(_vm.typing))])
       ])
     ])
   ])

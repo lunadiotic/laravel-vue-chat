@@ -27,6 +27,7 @@
                         @keyup.enter="send()"
                     >
                 </div>
+                <p>{{ typing }}</p>
             </div>
         </div>
     </div>
@@ -39,7 +40,8 @@ export default {
             chat: {
                 content: []
             },
-            input_message: ''
+            input_message: '',
+            typing: ''
         }
     },
 
@@ -47,10 +49,25 @@ export default {
         session:  Object
     },
 
+    watch: {
+        input_message() {
+            Echo.private('channel-chat')
+                .whisper('typing', {
+                    name: this.session.name
+                });
+        }
+    },
+
     mounted() {
-        Echo.channel('channel-chat')
+        Echo.private('channel-chat')
             .listen('ChatSent', (result) => {
                 this.chat.content.push(result);
+            }).listenForWhisper('typing', (result) => {
+                if (result.name != '') {
+                    this.typing = `${result.name} typing...`
+                } else {
+                    this.typing = ''
+                }
             });
         this.scroll();
     },
@@ -69,8 +86,6 @@ export default {
                 axios.post('/send', {
                     message: this.input_message
                 }).then((result) => {
-                    console.log(result);
-                    console.log(this.session)
                     this.input_message = ''
                 }).catch((err) => {
                     console.log(err);

@@ -36,6 +36,6 @@ class ChatSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new Channel('channel-chat');
+        return new PrivateChannel('channel-chat');
     }
 }
