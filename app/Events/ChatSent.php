@@ -26,6 +26,7 @@ class ChatSent implements ShouldBroadcast
     {
         $this->user = $user;
         $this->message = $message;
+        $this->dontBroadcastToCurrentUser();
     }
 
     /**
@@ -35,6 +36,6 @@ class ChatSent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('channel-chat');
+        return new Channel('channel-chat');
     }
 }

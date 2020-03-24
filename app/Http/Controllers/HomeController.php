@@ -29,6 +29,6 @@ class HomeController extends Controller
 
     public function sendChat(Request $request)
     {
-        event(new ChatSent($request->user(), 'message'));
+        event(new ChatSent($request->user(), $request->message));
     }
 }

@@ -7,11 +7,11 @@
 
                 <div
                     class="media m-2 bg-light rounded"
-                    v-for="chat in chat" :key="chat.id"
+                    v-for="chat in chat.content" :key="chat.id"
                 >
                     <div class="media-body m-2">
-                        <h5 class="mt-0 ">Hakim</h5>
-                        {{ chat }}
+                        <h5 class="mt-0 ">{{ chat.user.name }}</h5>
+                        {{ chat.message }}
                     </div>
 
                 </div>
@@ -23,7 +23,7 @@
                     <input
                         type="text"
                         class="form-control"
-                        v-model="message"
+                        v-model="input_message"
                         @keyup.enter="send()"
                     >
                 </div>
@@ -36,12 +36,22 @@
 export default {
     data() {
         return {
-            chat: [],
-            message: ''
+            chat: {
+                content: []
+            },
+            input_message: ''
         }
     },
 
+    props: {
+        session:  Object
+    },
+
     mounted() {
+        Echo.channel('channel-chat')
+            .listen('ChatSent', (result) => {
+                this.chat.content.push(result);
+            });
         this.scroll();
     },
 
@@ -51,11 +61,23 @@ export default {
 
     methods: {
         send() {
-            this.chat.push(this.message);
-            console.log(this.message);
-            this.message = '';
-            this.scroll();
+            if (this.input_message.lenght != 0) {
+                this.chat.content.push({
+                    message: this.input_message,
+                    user: this.session
+                });
+                axios.post('/send', {
+                    message: this.input_message
+                }).then((result) => {
+                    console.log(result);
+                    console.log(this.session)
+                    this.input_message = ''
+                }).catch((err) => {
+                    console.log(err);
+                });
+            }
         },
+
         scroll() {
             let container = document.getElementById("chat-box");
             let scrollHeight = container.scrollHeight;

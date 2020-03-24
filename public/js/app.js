@@ -1978,11 +1978,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      chat: [],
-      message: ''
+      chat: {
+        content: []
+      },
+      input_message: ''
     };
   },
+  props: {
+    session: Object
+  },
   mounted: function mounted() {
+    var _this = this;
+
+    Echo.channel('channel-chat').listen('ChatSent', function (result) {
+      _this.chat.content.push(result);
+    });
     this.scroll();
   },
   updated: function updated() {
@@ -1990,10 +2000,23 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     send: function send() {
-      this.chat.push(this.message);
-      console.log(this.message);
-      this.message = '';
-      this.scroll();
+      var _this2 = this;
+
+      if (this.input_message.lenght != 0) {
+        this.chat.content.push({
+          message: this.input_message,
+          user: this.session
+        });
+        axios.post('/send', {
+          message: this.input_message
+        }).then(function (result) {
+          console.log(result);
+          console.log(_this2.session);
+          _this2.input_message = '';
+        })["catch"](function (err) {
+          console.log(err);
+        });
+      }
     },
     scroll: function scroll() {
       var container = document.getElementById("chat-box");
@@ -47980,15 +48003,19 @@ var render = function() {
       _c(
         "div",
         { staticClass: "card-body bg-secondary", attrs: { id: "chat-box" } },
-        _vm._l(_vm.chat, function(chat) {
+        _vm._l(_vm.chat.content, function(chat) {
           return _c(
             "div",
             { key: chat.id, staticClass: "media m-2 bg-light rounded" },
             [
               _c("div", { staticClass: "media-body m-2" }, [
-                _c("h5", { staticClass: "mt-0 " }, [_vm._v("Hakim")]),
+                _c("h5", { staticClass: "mt-0 " }, [
+                  _vm._v(_vm._s(chat.user.name))
+                ]),
                 _vm._v(
-                  "\n                    " + _vm._s(chat) + "\n                "
+                  "\n                    " +
+                    _vm._s(chat.message) +
+                    "\n                "
                 )
               ])
             ]
@@ -48004,13 +48031,13 @@ var render = function() {
               {
                 name: "model",
                 rawName: "v-model",
-                value: _vm.message,
-                expression: "message"
+                value: _vm.input_message,
+                expression: "input_message"
               }
             ],
             staticClass: "form-control",
             attrs: { type: "text" },
-            domProps: { value: _vm.message },
+            domProps: { value: _vm.input_message },
             on: {
               keyup: function($event) {
                 if (
@@ -48025,7 +48052,7 @@ var render = function() {
                 if ($event.target.composing) {
                   return
                 }
-                _vm.message = $event.target.value
+                _vm.input_message = $event.target.value
               }
             }
           })
