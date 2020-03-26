@@ -25,9 +25,10 @@
                         class="form-control"
                         v-model="input_message"
                         @keyup.enter="send()"
+                        @keydown="typing()"
                     >
                 </div>
-                <p>{{ typing }}</p>
+                <p v-if="active_user">{{ active_user.name }} typing...</p>
             </div>
         </div>
     </div>
@@ -41,7 +42,8 @@ export default {
                 content: []
             },
             input_message: '',
-            typing: ''
+            active_user: false,
+            typing_timer: false
         }
     },
 
@@ -49,25 +51,20 @@ export default {
         session:  Object
     },
 
-    watch: {
-        input_message() {
-            Echo.private('channel-chat')
-                .whisper('typing', {
-                    name: this.session.name
-                });
-        }
-    },
-
     mounted() {
         Echo.private('channel-chat')
             .listen('ChatSent', (result) => {
                 this.chat.content.push(result);
             }).listenForWhisper('typing', (result) => {
-                if (result.name != '') {
-                    this.typing = `${result.name} typing...`
-                } else {
-                    this.typing = ''
+                this.active_user = result;
+
+                if (this.typing_timer) {
+                    clearTimeout(this.typing_timer);
                 }
+
+                this.typing_timer = setTimeout(() => {
+                    this.active_user = false
+                }, 2000)
             });
         this.scroll();
     },
@@ -91,6 +88,11 @@ export default {
                     console.log(err);
                 });
             }
+        },
+
+        typing() {
+            Echo.private('channel-chat')
+                .whisper('typing', this.session);
         },
 
         scroll() {

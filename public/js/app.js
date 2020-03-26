@@ -1976,6 +1976,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -1983,18 +1984,12 @@ __webpack_require__.r(__webpack_exports__);
         content: []
       },
       input_message: '',
-      typing: ''
+      active_user: false,
+      typing_timer: false
     };
   },
   props: {
     session: Object
-  },
-  watch: {
-    input_message: function input_message() {
-      Echo["private"]('channel-chat').whisper('typing', {
-        name: this.session.name
-      });
-    }
   },
   mounted: function mounted() {
     var _this = this;
@@ -2002,11 +1997,15 @@ __webpack_require__.r(__webpack_exports__);
     Echo["private"]('channel-chat').listen('ChatSent', function (result) {
       _this.chat.content.push(result);
     }).listenForWhisper('typing', function (result) {
-      if (result.name != '') {
-        _this.typing = "".concat(result.name, " typing...");
-      } else {
-        _this.typing = '';
+      _this.active_user = result;
+
+      if (_this.typing_timer) {
+        clearTimeout(_this.typing_timer);
       }
+
+      _this.typing_timer = setTimeout(function () {
+        _this.active_user = false;
+      }, 2000);
     });
     this.scroll();
   },
@@ -2030,6 +2029,9 @@ __webpack_require__.r(__webpack_exports__);
           console.log(err);
         });
       }
+    },
+    typing: function typing() {
+      Echo["private"]('channel-chat').whisper('typing', this.session);
     },
     scroll: function scroll() {
       var container = document.getElementById("chat-box");
@@ -48061,6 +48063,9 @@ var render = function() {
                 }
                 return _vm.send()
               },
+              keydown: function($event) {
+                return _vm.typing()
+              },
               input: function($event) {
                 if ($event.target.composing) {
                   return
@@ -48071,7 +48076,9 @@ var render = function() {
           })
         ]),
         _vm._v(" "),
-        _c("p", [_vm._v(_vm._s(_vm.typing))])
+        _vm.active_user
+          ? _c("p", [_vm._v(_vm._s(_vm.active_user.name) + " typing...")])
+          : _vm._e()
       ])
     ])
   ])
